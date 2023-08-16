@@ -2,6 +2,9 @@
 
 A real-time post editing application using SSE (Server-sent events) in Golang.
 
+![sse-golang](https://github.com/jamalkaksouri/RealTimePostEditingGolang/assets/12379287/c1602b3a-6aca-4a19-b52c-06756e2417b5)
+
+
 ## Usage
 
 Follow these steps to get started with the RealTimePostEditingGolang application:
