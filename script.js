@@ -1,9 +1,9 @@
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", () => {
   const eventSource = new EventSource("http://localhost:6835/sse");
   let currentStockValue = "";
   const container = document.querySelector("#stock-element");
 
-  eventSource.onmessage = function (event) {
+  eventSource.addEventListener("message", (event) => {
     const eventData = JSON.parse(event.data);
 
     if (eventData.event === "time") {
@@ -17,25 +17,25 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (currentStockValue !== newValue) {
           currentStockValue = newValue;
-          animateContainer2();
+          animateContainer2(container);
         }
       } else if (eventData.data === "Product X is out of stock") {
-        animateContainer();
+        animateContainer(container);
       }
       stockElement.textContent = eventData.data;
     }
-  };
+  });
 
   function extractNumericValue(str) {
     const matches = str.match(/\d+/);
     return matches ? matches[0] : "";
   }
 
-  function animateContainer() {
+  function animateContainer(container) {
     container.style.animation = "swashOut 2s ease-in-out";
   }
 
-  function animateContainer2() {
+  function animateContainer2(container) {
     container.style.animation = "puffIn 1s ease-in-out";
     setTimeout(() => {
       container.style.animation = ""; // Remove animation after it completes
