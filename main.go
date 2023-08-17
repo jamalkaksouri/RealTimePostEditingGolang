@@ -68,12 +68,18 @@ func handleSSE(app *dbInstance, st *serverState) gin.HandlerFunc {
 		ticker := time.NewTicker(time.Second * 1)
 		defer ticker.Stop()
 
+		// keeping the connection alive with keep-alive protocol
+		keepAliveTicker := time.NewTicker(time.Second * 15)
+		defer keepAliveTicker.Stop()
+
 		for {
 			select {
 			case <-ticker.C:
 				sendSSEMessage(c.Writer, formatTimeMessage())
 				stockText, quantity := getStockStatus(app, st)
 				sendSSEMessage(c.Writer, formatStockMessage(stockText, quantity))
+			case <-keepAliveTicker.C:
+				sendSSEMessage(c.Writer, ":keepalive\n") // Send keep-alive message
 			case <-c.Writer.CloseNotify():
 				return
 			}
