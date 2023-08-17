@@ -69,21 +69,28 @@ func handleSSE(app *dbInstance, st *serverState) gin.HandlerFunc {
 		defer ticker.Stop()
 
 		// keeping the connection alive with keep-alive protocol
-		keepAliveTicker := time.NewTicker(time.Second * 15)
+		keepAliveTicker := time.NewTicker(time.Second * 30)
 		defer keepAliveTicker.Stop()
 
+	outerloop:
 		for {
 			select {
+			case <-c.Done():
+				log.Println("Client disconnected or context canceled")
+				break outerloop
 			case <-ticker.C:
 				sendSSEMessage(c.Writer, formatTimeMessage())
 				stockText, quantity := getStockStatus(app, st)
 				sendSSEMessage(c.Writer, formatStockMessage(stockText, quantity))
 			case <-keepAliveTicker.C:
-				sendSSEMessage(c.Writer, ":keepalive\n") // Send keep-alive message
+				sendSSEKeepAliveMessage(c.Writer) // Send "keep-alive" event
+				log.Println("Keep-Alive Sent")    // Log that keep-alive was sent
 			case <-c.Writer.CloseNotify():
-				return
+				log.Println("Client disconnected")
+				break outerloop
 			}
 		}
+		log.Println("Client disconnected -> Finished")
 	}
 }
 
@@ -93,6 +100,12 @@ func setupSSEHeaders(c *gin.Context) {
 	c.Header("Connection", "keep-alive")
 	c.Header("Access-Control-Allow-Origin", "*")
 	c.Header("Access-Control-Allow-Headers", "Content-Type")
+}
+
+func sendSSEKeepAliveMessage(w http.ResponseWriter) {
+	// Send "keep-alive" SSE message
+	_, _ = fmt.Fprintf(w, ":keepalive\n")
+	w.(http.Flusher).Flush()
 }
 
 func sendSSEMessage(w http.ResponseWriter, message string) {

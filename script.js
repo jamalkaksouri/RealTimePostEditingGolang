@@ -1,10 +1,15 @@
 document.addEventListener("DOMContentLoaded", () => {
   const eventSource = new EventSource("http://localhost:6835/sse");
+
   let currentStockValue = "";
   const container = document.querySelector("#stock-element");
 
   eventSource.addEventListener("message", (event) => {
     const eventData = JSON.parse(event.data);
+
+    if (eventData.data === ":keepalive") {
+      return;
+    }
 
     if (eventData.event === "time") {
       const timeElement = document.getElementById("time-element");
