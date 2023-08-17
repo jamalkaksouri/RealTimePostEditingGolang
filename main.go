@@ -117,7 +117,11 @@ func initDB() (*sql.DB, error) {
 	loadConfig()
 
 	connStr := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
-		viper.GetString("db.host"), viper.GetInt("db.port"), viper.GetString("db.user"), viper.GetString("db.password"), viper.GetString("db.name"))
+		viper.GetString("db.host"),
+		viper.GetInt("db.port"),
+		viper.GetString("db.user"),
+		viper.GetString("db.password"),
+		viper.GetString("db.name"))
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
